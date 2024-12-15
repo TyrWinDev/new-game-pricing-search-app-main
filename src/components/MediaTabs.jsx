@@ -3,51 +3,33 @@ import { useState } from 'react'
 function MediaTabs({ trailer, review, screenshots }) {
   const [activeTab, setActiveTab] = useState('trailer')
 
+  const VideoPlayer = ({ video, type }) => {
+    if (!video) return <p>No {type} available</p>
+
+    return (
+      <div className="aspect-w-16 aspect-h-9">
+        <iframe
+          className="w-full h-full rounded-lg"
+          src={`https://www.youtube.com/embed/${video.videoId}`}
+          title={video.title}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+        <div className="mt-2">
+          <h3 className="font-semibold">{video.title}</h3>
+          <p className="text-sm text-gray-500">By {video.channelTitle}</p>
+        </div>
+      </div>
+    )
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'trailer':
-        return trailer ? (
-          <iframe
-            width="100%"
-            height="400"
-            src={`https://www.youtube.com/embed/${trailer.videoId}`}
-            title={trailer.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
-        ) : (
-          <p>No trailer available</p>
-        )
+        return <VideoPlayer video={trailer} type="trailer" />
       case 'review':
-        return review ? (
-          <iframe
-            width="100%"
-            height="400"
-            src={`https://www.youtube.com/embed/${review.videoId}`}
-            title={review.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
-        ) : (
-          <p>No review available</p>
-        )
-      case 'screenshots':
-        return screenshots && screenshots.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {screenshots.map((screenshot, index) => (
-              <img
-                key={screenshot.id}
-                src={screenshot.image}
-                alt={`Screenshot ${index + 1}`}
-                className="w-full rounded-lg shadow-lg"
-              />
-            ))}
-          </div>
-        ) : (
-          <p>No screenshots available</p>
-        )
+        return <VideoPlayer video={review} type="review" />
       default:
         return null
     }
@@ -55,27 +37,23 @@ function MediaTabs({ trailer, review, screenshots }) {
 
   return (
     <div className="mt-8">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-center mb-4 space-x-2">
         <button
           className={`btn ${activeTab === 'trailer' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveTab('trailer')}
         >
+          <span className="mr-2">🎬</span>
           Trailer
         </button>
         <button
-          className={`btn ml-2 ${activeTab === 'review' ? 'btn-primary' : 'btn-secondary'}`}
+          className={`btn ${activeTab === 'review' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveTab('review')}
         >
+          <span className="mr-2">📝</span>
           Review
         </button>
-        <button
-          className={`btn ml-2 ${activeTab === 'screenshots' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => setActiveTab('screenshots')}
-        >
-          Screenshots
-        </button>
       </div>
-      <div className="video-container bg-base-200 rounded-lg p-4">
+      <div className="bg-base-200 rounded-lg p-4">
         {renderContent()}
       </div>
     </div>

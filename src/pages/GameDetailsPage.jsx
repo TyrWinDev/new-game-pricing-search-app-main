@@ -8,7 +8,6 @@ function GameDetailsPage() {
   const [game, setGame] = useState(null)
   const [trailer, setTrailer] = useState(null)
   const [review, setReview] = useState(null)
-  const [screenshots, setScreenshots] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isWishlisted, setIsWishlisted] = useState(false)
@@ -98,7 +97,7 @@ function GameDetailsPage() {
         </div>
       </div>
 
-      <MediaTabs trailer={trailer} review={review} screenshots={screenshots} />
+      <MediaTabs trailer={trailer} review={review} />
     </div>
   )
 }
