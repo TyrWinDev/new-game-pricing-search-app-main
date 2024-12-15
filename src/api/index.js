@@ -91,3 +91,31 @@ export const register = async (userData) => {
   }
   return response.json();
 };
+
+export const fetchGameDetails = async (id) => {
+  try {
+    // First get the game details
+    const gameResponse = await fetch(`${API_URL}/games/${id}`);
+    if (!gameResponse.ok) {
+      throw new Error('Failed to fetch game');
+    }
+    const gameDetails = await gameResponse.json();
+
+    // Use the game's name to search for deals
+    const dealsResponse = await fetch(`${API_URL}/deals?title=${encodeURIComponent(gameDetails.name)}`);
+    if (!dealsResponse.ok) {
+      throw new Error('Failed to fetch deals');
+    }
+    const deals = await dealsResponse.json();
+
+    // Add deals information to game details
+    gameDetails.cheapest = deals[0]?.cheapest || null;
+    gameDetails.cheapestDealID = deals[0]?.cheapestDealID || null;
+    gameDetails.storeLink = deals[0] ? `https://www.cheapshark.com/redirect?dealID=${deals[0].cheapestDealID}` : null;
+
+    return gameDetails;
+  } catch (error) {
+    console.error('Error fetching game details:', error);
+    throw error;
+  }
+};

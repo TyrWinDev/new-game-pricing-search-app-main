@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { fetchGameById, fetchYouTubeVideo, fetchYouTubeReview, fetchGameScreenshots, fetchDeals } from '../api'
+import { fetchGameDetails, fetchYouTubeVideo, fetchYouTubeReview, fetchGameScreenshots } from '../api'
 import MediaTabs from '../components/MediaTabs'
 
 function GameDetailsPage() {
@@ -9,55 +9,45 @@ function GameDetailsPage() {
   const [trailer, setTrailer] = useState(null)
   const [review, setReview] = useState(null)
   const [screenshots, setScreenshots] = useState([])
-  const [cheapestDeal, setCheapestDeal] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [isWishlisted, setIsWishlisted] = useState(false)
 
   useEffect(() => {
     const loadGameDetails = async () => {
       try {
-        const fetchedGame = await fetchGameById(id)
-        setGame(fetchedGame)
+        const fetchedGame = await fetchGameDetails(id);
+        setGame(fetchedGame);
 
         // Fetch YouTube trailer and review
         const [trailerData, reviewData] = await Promise.all([
           fetchYouTubeVideo(fetchedGame.name),
           fetchYouTubeReview(fetchedGame.name)
-        ])
+        ]);
 
-        // Fetch screenshots
-        const screenshotsData = await fetchGameScreenshots(id)
-        setScreenshots(screenshotsData.results)
-
-        // Fetch cheapest deal
-        const dealResponse = await fetchDeals(fetchedGame.name)
-        const cheapest = dealResponse.reduce((prev, curr) => (prev.salePrice < curr.salePrice ? prev : curr), dealResponse[0])
-        setCheapestDeal(cheapest)
-
-        // Extract video IDs from search results
         setTrailer({
           videoId: trailerData.id.videoId,
           title: trailerData.snippet.title,
           thumbnail: trailerData.snippet.thumbnails.high.url,
           channelTitle: trailerData.snippet.channelTitle
-        })
+        });
 
         setReview({
           videoId: reviewData.id.videoId,
           title: reviewData.snippet.title,
           thumbnail: reviewData.snippet.thumbnails.high.url,
           channelTitle: reviewData.snippet.channelTitle
-        })
+        });
 
-        setLoading(false)
+        setLoading(false);
       } catch (err) {
-        console.error('Error loading game details:', err)
-        setError('Failed to load game details')
-        setLoading(false)
+        console.error('Error loading game details:', err);
+        setError('Failed to load game details');
+        setLoading(false);
       }
-    }
-    loadGameDetails()
-  }, [id])
+    };
+    loadGameDetails();
+  }, [id]);
 
   if (loading) return <div className="text-center mt-8">Loading...</div>
   if (error) return <div className="text-center mt-8">{error}</div>
@@ -81,13 +71,30 @@ function GameDetailsPage() {
               <span key={tag.id} className="badge badge-outline mr-2 mb-2">{tag.name}</span>
             ))}
           </div>
-          {cheapestDeal && (
-            <p className="mb-4">
-              <strong>Cheapest Price:</strong> ${cheapestDeal.salePrice} 
-              <a href={cheapestDeal.storeLink} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-500 underline">Buy Now</a>
-            </p>
+          {game.cheapest && (
+            <div className="flex gap-4">
+              <button 
+                onClick={() => window.open(game.storeLink, '_blank')}
+                className="btn btn-primary"
+              >
+                Buy Now - ${game.cheapest}
+              </button>
+              <button 
+                onClick={() => setIsWishlisted(!isWishlisted)}
+                className={`btn ${isWishlisted ? 'btn-warning' : 'btn-secondary'}`}
+              >
+                {isWishlisted ? (
+                  <>
+                    <span className="mr-2">★</span> Wishlisted
+                  </>
+                ) : (
+                  <>
+                    <span className="mr-2">☆</span> Add to Wishlist
+                  </>
+                )}
+              </button>
+            </div>
           )}
-          <button className="btn btn-primary">Add to Cart</button>
         </div>
       </div>
 
